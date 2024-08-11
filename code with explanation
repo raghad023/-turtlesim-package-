@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+import rospy  # We use rospy for make ROS node in Python
+from geometry_msgs.msg import Twist  # Twist is message for tell robot how move
+
+def move_turtle():
+    # Here we start node, we call it 'move_turtle'
+    rospy.init_node('move_turtle', anonymous=True)
+    
+    # We make publisher, it send commands to turtle to move
+    cmd_vel_pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
+    
+    # Set how many time we send command each second (10 times in one second)
+    rate = rospy.Rate(10)  # 10hz
+    
+    # Create message for move turtle, we call it move_cmd
+    move_cmd = Twist()
+    
+    # Set how fast turtle move forward and turn
+    move_cmd.linear.x = 2.0  # Move forward with speed 2 m/s
+    move_cmd.angular.z = 1.0  # Turn with speed 1 rad/s
+
+    # Print message to screen for tell turtle moving now
+    rospy.loginfo("Moving the turtle...")
+
+    # Save time when start move
+    start_time = rospy.Time.now()
+    
+    # How long turtle should move (10 second)
+    duration = rospy.Duration(10)  # Move for 10 second
+
+    # This loop keep running until ROS stop or time finish
+    while not rospy.is_shutdown():
+        # Get current time now
+        current_time = rospy.Time.now()
+        
+        # If time passed 10 second, stop loop
+        if current_time - start_time > duration:
+            break  # Stop loop if time finish
+        
+        # Send move command to turtle
+        cmd_vel_pub.publish(move_cmd)
+        
+        # Wait until next loop, so it run 10 times each second
+        rate.sleep()
+
+# This check if script run direct, not import by other script
+if __name__ == '__main__':
+    try:
+        move_turtle()  # Call function to start moving turtle
+    except rospy.ROSInterruptException:
+        # If ROS stop script, do nothing and exit
+        pass
